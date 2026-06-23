@@ -106,6 +106,7 @@ export interface GPACourse {
   courseName: string;
   courseCode: string;
   creditUnits: number;
+  score?: number;  // undefined on legacy records saved before score-first system
   grade: string;
   gradePoint: number;
   semester: Semester;
