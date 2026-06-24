@@ -337,8 +337,21 @@ export default function Settings() {
   };
 
   const handleAvatarChange = (file: File) => {
+    // Pre-check size before reading — gives instant feedback
+    if (file.size > 5 * 1024 * 1024) {
+      alert(`Image is too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Maximum size is 5 MB.`);
+      return;
+    }
     const reader = new FileReader();
-    reader.onload = e => setP('avatar', e.target?.result as string);
+    reader.onload  = e => {
+      const result = e.target?.result as string;
+      console.info(`[Settings] Avatar selected — ${(file.size / 1024).toFixed(1)} KB, type: ${file.type}`);
+      setP('avatar', result);
+    };
+    reader.onerror = () => {
+      console.error('[Settings] FileReader failed to read avatar file.');
+      alert('Could not read the selected image. Please try a different file.');
+    };
     reader.readAsDataURL(file);
   };
 
@@ -350,9 +363,6 @@ export default function Settings() {
         fullName: profileForm.fullName!.trim(),
         department: profileForm.department || '',
         programLevel: (profileForm.programLevel || DEFAULT_PROGRAM_LEVEL) as ProgramLevel,
-        // Number() coercion is the critical fix: Select onChange returns a string
-        // from the DOM even after parseFloat — this guarantees a numeric value
-        // is always written to Firestore, never the string "3", "4", or "5".
         cgpaScale: Number(profileForm.cgpaScale ?? DEFAULT_CGPA_SCALE) as CgpaScale,
         matricNumber: profileForm.matricNumber || '',
         semesterStartDate: profileForm.semesterStartDate || new Date().toISOString().split('T')[0],
@@ -363,11 +373,20 @@ export default function Settings() {
         avatar: profileForm.avatar || '',
       });
       setShowProfile(false);
-      // Clear local base64 from form — store now holds the Storage URL
+      // Clear the base64 data URL from form state — the store now holds
+      // the blob: URL reconstructed from IndexedDB by db.getProfile()
       setProfileForm(prev => ({ ...prev, avatar: '' }));
+      console.info('[Settings] Profile saved successfully.');
     } catch (e: any) {
-      console.error('Save profile error:', e);
-      alert(`Failed to save profile: ${e?.message || 'Please try again.'}`);
+      // Log full error details for debugging
+      console.error('[Settings] Save profile failed:', e);
+      const msg = e?.message || '';
+      alert(
+        msg.includes('too large')   ? e.message :
+        msg.includes('not allowed') ? e.message :
+        msg.includes('IndexedDB')   ? 'Could not save profile picture. Your browser storage may be full.' :
+        `Failed to save profile: ${msg || 'Please try again.'}`
+      );
     } finally {
       setSaving(false);
     }

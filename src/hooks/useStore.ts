@@ -102,7 +102,7 @@ interface AppState {
   deleteAssignment: (id: string) => Promise<void>;
   toggleAssignment: (id: string) => Promise<void>;
   addStudySession: (s: Omit<StudySession, 'id'>) => Promise<void>;
-  addMaterial: (m: Omit<CourseMaterial, 'id' | 'createdAt'>) => Promise<void>;
+  addMaterial: (m: CourseMaterial) => void;  // optimistic — material already saved to IDB
   deleteMaterial: (id: string) => Promise<void>;
   saveProfile: (p: StudentProfile) => Promise<void>;
   updateSettings: (u: Partial<AppSettingsExtended>) => Promise<void>;
@@ -399,15 +399,17 @@ export const useStore = create<AppState>()(
         set(st => ({ studySessions: [...st.studySessions, s] }));
       },
 
-      addMaterial: async data => {
-        const m: CourseMaterial = { ...data, id: generateId(), createdAt: new Date().toISOString() };
-        await db.saveMaterial(m);
-        set(s => ({ materials: [...s.materials, m] }));
+      // addMaterial is now a pure optimistic store update.
+      // The IDB write happens in Materials.tsx (via saveMaterialToIDB) BEFORE
+      // this is called, so the data is already persisted by the time it hits state.
+      addMaterial: (material: CourseMaterial) => {
+        set(s => ({ materials: [...s.materials, material] }));
       },
 
       deleteMaterial: async id => {
-        await db.deleteMaterial(id);
+        // Optimistic update — remove from UI immediately, then delete from IDB
         set(s => ({ materials: s.materials.filter(m => m.id !== id) }));
+        await db.deleteMaterial(id);
       },
 
       saveProfile: async profile => {

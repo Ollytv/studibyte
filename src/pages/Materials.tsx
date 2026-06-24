@@ -2,12 +2,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Plus, Trash2, Download, FileText, Image, Link,
   StickyNote, Upload, ChevronLeft, Eye, X, Search,
-  File, ExternalLink, AlertCircle,
+  File, ExternalLink, AlertCircle, HardDrive,
 } from 'lucide-react';
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { useStore } from '../hooks/useStore';
 import { CourseMaterial } from '../types';
-import { saveMaterial } from '../services/db';
+import { saveMaterialToIDB, getStorageWarning, getStorageUsage } from '../services/materialStorage';
 import { Modal } from '../components/ui/Modal';
 import { Input, Select, TextArea } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
@@ -81,7 +81,7 @@ function PreviewModal({ material, onClose }: { material: CourseMaterial; onClose
 
 // ── Main component ─────────────────────────────────────────────────────────
 export default function Materials() {
-  const { materials, deleteMaterial, activeSemester, activeAcademicYear, classes, setActiveTab } = useStore();
+  const { materials, addMaterial, deleteMaterial, activeSemester, activeAcademicYear, classes, setActiveTab } = useStore();
 
   const [showAdd, setShowAdd]           = useState(false);
   const [filterCourse, setFilterCourse] = useState('');
@@ -106,9 +106,20 @@ export default function Materials() {
 
   const fileRef = useRef<HTMLInputElement>(null);
 
-  // ── Store materials in local state so we can add without full reload ──────
-  const [localMaterials, setLocalMaterials] = useState<CourseMaterial[]>([]);
-  const allMaterials = [...materials, ...localMaterials];
+  // ── Storage status ───────────────────────────────────────────────────────
+  const [storageWarning, setStorageWarning] = useState<string | null>(null);
+  const [storageUsedMB, setStorageUsedMB]   = useState(0);
+
+  const refreshStorageStatus = async () => {
+    const [warning, usage] = await Promise.all([getStorageWarning(), getStorageUsage()]);
+    setStorageWarning(warning);
+    setStorageUsedMB(Math.round(usage.totalBytes / 1024 / 1024 * 10) / 10);
+  };
+
+  useEffect(() => { refreshStorageStatus(); }, []);
+
+  // materials from Zustand store — already loaded from IndexedDB by useStore.loadData
+  const allMaterials = materials;
 
   // ── Derived ───────────────────────────────────────────────────────────────
   const courseOptions = useMemo(() => {
@@ -168,7 +179,7 @@ export default function Materials() {
     setFileError('');
     setUploadStatus('idle');
 
-    // Check size — warn but don't block (Firebase Storage handles up to 5GB)
+    // Check size — warn but don't block (materialStorage.ts enforces the hard limit)
     if (file.size > MAX_FILE_MB * 1024 * 1024) {
       setFileError(`File is ${formatBytes(file.size)}. Large files may take longer to upload.`);
     }
@@ -222,52 +233,56 @@ export default function Materials() {
 
       const material: CourseMaterial = {
         id,
-        name: form.name.trim(),
-        courseCode: form.courseCode,
-        courseName: linkedClass?.courseName || form.courseName,
-        type: form.type,
-        // For file types: use the data URL — db.ts converts it to Storage URL
-        // For text/link: use the content directly
-        content: isFileType ? fileDataUrl : form.content.trim(),
-        size: selectedFile?.size,
-        semester: activeSemester,
+        name:         form.name.trim(),
+        courseCode:   form.courseCode,
+        courseName:   linkedClass?.courseName || form.courseName,
+        type:         form.type,
+        // For file types: pass the data URL — materialStorage.ts converts to ArrayBuffer
+        // For text/link: use content directly
+        content:      isFileType ? fileDataUrl : form.content.trim(),
+        size:         selectedFile?.size,
+        semester:     activeSemester,
         academicYear: activeAcademicYear,
-        createdAt: new Date().toISOString(),
+        createdAt:    new Date().toISOString(),
       };
 
-      // Simulate progress for UX (actual progress comes from Firebase)
-      const progressInterval = setInterval(() => {
-        setUploadProgress(p => Math.min(p + 8, 85));
-      }, 300);
+      // Show progress animation — IDB writes are fast but give user feedback
+      setUploadProgress(30);
+      const savedMeta = await saveMaterialToIDB(material);
+      setUploadProgress(90);
 
-      // Call db.saveMaterial directly so we can handle errors here
-      await saveMaterial(material);
+      // Reconstruct the material with a fresh blob: URL for immediate display.
+      // For file types, re-use the data URL we already have in memory as the
+      // content for this session — getMaterialsFromIDB() will create a proper
+      // blob: URL on next reload. For text/link, content is already correct.
+      const displayMaterial: CourseMaterial = {
+        ...material,
+        size: savedMeta.size, // use the byte-accurate size from IDB
+      };
 
-      clearInterval(progressInterval);
+      // Optimistically add to store so the list updates immediately
+      addMaterial(displayMaterial);
+
       setUploadProgress(100);
       setUploadStatus('done');
 
-      // Add to local state immediately so it shows without reload
-      setLocalMaterials(prev => [...prev, {
-        ...material,
-        // content will be storage URL after save, but we show local preview
-      }]);
+      // Refresh storage badge
+      await refreshStorageStatus();
 
-      // Small delay to show 100% before closing
       setTimeout(() => {
         setShowAdd(false);
         resetAll();
-      }, 600);
+      }, 500);
 
     } catch (e: any) {
       console.error('saveMaterial error:', e);
       setUploadStatus('error');
       setUploadError(
-        e?.message?.includes('storage')
-          ? 'Firebase Storage error. Check your storage rules in Firebase console.'
-          : e?.message?.includes('auth')
-          ? 'Authentication error. Please log out and log back in.'
-          : `Upload failed: ${e?.message || 'Unknown error'}. Please try again.`
+        e?.message?.includes('too large')
+          ? e.message
+          : e?.message?.includes('Storage limit')
+          ? e.message
+          : `Save failed: ${e?.message || 'Unknown error'}. Please try again.`
       );
       setUploadProgress(0);
     }
@@ -312,7 +327,12 @@ export default function Materials() {
               </button>
               <div>
                 <h1 className="text-2xl font-display font-bold text-white">Course Materials</h1>
-                <p className="text-xs text-dark-400 font-body">{typeCounts.all} file{typeCounts.all !== 1 ? 's' : ''} saved</p>
+                <p className="text-xs text-dark-400 font-body">
+                  {typeCounts.all} file{typeCounts.all !== 1 ? 's' : ''}
+                  {storageUsedMB > 0 && (
+                    <span className="ml-1 text-dark-600">· {storageUsedMB} MB used</span>
+                  )}
+                </p>
               </div>
             </div>
             <motion.button onClick={() => { resetAll(); setShowAdd(true); }}
@@ -324,6 +344,14 @@ export default function Materials() {
         </div>
 
         <SemesterSwitcher />
+
+        {/* Storage warning banner */}
+        {storageWarning && (
+          <div className="mx-4 mb-3 p-3 rounded-2xl bg-yellow-500/10 border border-yellow-500/20 flex items-start gap-2">
+            <HardDrive size={14} className="text-yellow-400 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-yellow-400 font-body">{storageWarning}</p>
+          </div>
+        )}
 
         {/* Search */}
         <div className="px-4 mb-3">
@@ -539,7 +567,7 @@ export default function Materials() {
             <div>
               <div className="flex items-center justify-between mb-1">
                 <p className="text-xs font-body text-dark-400">
-                  {uploadStatus === 'done' ? '✅ Saved!' : 'Uploading to Firebase…'}
+                  {uploadStatus === 'done' ? '✅ Saved!' : 'Saving to device…'}
                 </p>
                 <p className="text-xs font-mono text-green-400">{uploadProgress}%</p>
               </div>
