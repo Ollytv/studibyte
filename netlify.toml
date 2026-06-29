@@ -9,9 +9,22 @@
   NODE_VERSION = "20"
 
 # ── SPA redirect ──────────────────────────────────────────────────────────────
+# Serve sitemap directly
 [[redirects]]
-  from   = "/*"
-  to     = "/index.html"
+  from = "/sitemap.xml"
+  to = "/sitemap.xml"
+  status = 200
+
+# Serve robots.txt directly
+[[redirects]]
+  from = "/robots.txt"
+  to = "/robots.txt"
+  status = 200
+
+# SPA fallback
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
   status = 200
 
 # ── Security headers — applied to every response ──────────────────────────────

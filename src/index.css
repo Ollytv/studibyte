@@ -200,6 +200,123 @@ a, button, [role="button"] {
 /* Overscroll lock */
 .overscroll-none { overscroll-behavior: none; }
 
+/* ── Responsive layout fixes ────────────────────────────────────────────────
+   These rules fix overflow, clipping, and safe-area issues across all
+   device sizes from 320px to 1440px+. No visual design changes.           */
+
+/* Prevent any element from causing horizontal scroll */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* Clamp images and media to parent width */
+img, video, iframe, embed, object {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Fix max-width containers to never exceed viewport */
+.max-w-2xl, .max-w-xl, .max-w-lg, .max-w-md, .max-w-sm, .max-w-xs {
+  width: 100%;
+}
+
+/* Prevent grid children from blowing out on narrow screens */
+.grid {
+  min-width: 0;
+}
+.grid > * {
+  min-width: 0;
+}
+
+/* Flex children: prevent overflow by allowing shrink */
+.flex > * {
+  min-width: 0;
+}
+
+/* Fixed nav: ensure it never exceeds viewport width */
+nav.fixed {
+  max-width: 100vw;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* Public pages: constrain content sections */
+section, article, aside, main {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Card grids — 2-col on 360px+, 1-col below 320px */
+@media screen and (max-width: 359px) {
+  .grid-cols-2 {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Ensure text never overflows its container */
+p, h1, h2, h3, h4, h5, h6, span, a, button, label {
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+/* Fix for long course codes or file names */
+.font-mono, code, pre {
+  word-break: break-all;
+}
+
+/* Safe area fixes — apply to fixed bottom elements */
+.fixed.bottom-0, .fixed.bottom-4, .fixed.bottom-6 {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Tablet and desktop: relax mobile-specific constraints */
+@media screen and (min-width: 768px) {
+  /* Allow wider content on tablets */
+  .max-w-2xl {
+    max-width: 42rem;
+  }
+  /* Fix modal/sheet positioning on wide screens */
+  .fixed.left-0.right-0.bottom-0 {
+    max-width: 100vw;
+  }
+}
+
+@media screen and (min-width: 1024px) {
+  /* Centre content column on large screens */
+  .max-w-2xl {
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+/* Prevent bottom nav from overlapping content on notched devices */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .pb-safe {
+    padding-bottom: calc(env(safe-area-inset-bottom) + 16px);
+  }
+}
+
+/* Fix: textarea resize handle on iOS can break layout */
+textarea {
+  resize: none;
+}
+
+/* Fix: select arrow positioning on small screens */
+@media screen and (max-width: 360px) {
+  select {
+    padding-right: 28px !important;
+    font-size: 14px !important;
+  }
+}
+
+/* Truncate long text in flex/grid children */
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
 /* Line clamp utility */
 .line-clamp-2 {
   display: -webkit-box;

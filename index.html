@@ -3,24 +3,39 @@
 
 <head>
   <meta charset="UTF-8" />
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2809603575540112"
-     crossorigin="anonymous"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#0a0a0a" />
-  <meta name="description" content="Smart Timetable & Attendance Tracker for Students" />
+
+  <!-- Primary SEO -->
+  <title>StudiByte — AI-Powered Student Productivity Platform</title>
+  <meta name="description" content="StudiByte is a free AI-powered academic platform for university students. Track GPA and CGPA, manage your timetable, monitor attendance, plan assignments, upload course materials, and get instant answers from an AI study assistant." />
+  <link rel="canonical" href="https://studibyte.app/" />
+
+  <!-- Keywords (supplementary — Google uses content, not just this tag) -->
+  <meta name="keywords" content="student productivity app, AI study assistant, GPA calculator, CGPA tracker, timetable app, assignment tracker, attendance tracker, study planner, university student app, academic planner" />
+
+  <!-- PWA / Mobile -->
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="STUDIBYTE" />
+  <meta name="apple-mobile-web-app-title" content="StudiByte" />
   <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="application-name" content="STUDIBYTE" />
+  <meta name="application-name" content="StudiByte" />
   <meta name="msapplication-TileColor" content="#0a0a0a" />
   <meta name="format-detection" content="telephone=no" />
 
   <!-- Open Graph -->
-  <meta property="og:type" content="website" />
-  <meta property="og:title" content="STUDIBYTE" />
-  <meta property="og:description" content="Smart Timetable & Attendance Tracker for Students" />
-  <meta property="og:image" content="/icons/icon-512x512.png" />
+  <meta property="og:type"        content="website" />
+  <meta property="og:url"         content="https://studibyte.app/" />
+  <meta property="og:title"       content="StudiByte — AI-Powered Student Productivity Platform" />
+  <meta property="og:description" content="Free AI study assistant, GPA tracker, timetable manager, attendance monitor, and assignment planner — all in one app built for university students." />
+  <meta property="og:image"       content="/icons/icon-512x512.png" />
+  <meta property="og:site_name"   content="StudiByte" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card"        content="summary_large_image" />
+  <meta name="twitter:title"       content="StudiByte — AI-Powered Student Productivity Platform" />
+  <meta name="twitter:description" content="Free AI study assistant, GPA tracker, timetable manager, and assignment planner for university students." />
+  <meta name="twitter:image"       content="/icons/icon-512x512.png" />
 
   <!-- Apple Touch Icons -->
   <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
@@ -34,18 +49,37 @@
   <!-- Manifest -->
   <link rel="manifest" href="/manifest.json" />
 
-  <!-- Splash screens for iOS -->
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <link rel="apple-touch-startup-image" href="/icons/icon-512x512.png">
+  <!-- iOS splash -->
+  <link rel="apple-touch-startup-image" href="/icons/icon-512x512.png" />
 
-  <!-- Fonts -->
+  <!-- Google AdSense -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2809603575540112"
+     crossorigin="anonymous"></script>
+
+  <!-- Fonts — preconnect first for performance -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
     href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap"
     rel="stylesheet" />
 
-  <title>STUDIBYTE</title>
+  <!-- Structured data — helps Google understand the product -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "StudiByte",
+    "applicationCategory": "EducationApplication",
+    "operatingSystem": "Web, Android, iOS",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "description": "AI-powered academic productivity platform for university and college students. Features include GPA tracking, timetable management, attendance monitoring, assignment planning, and an AI study assistant.",
+    "url": "https://studibyte.app"
+  }
+  </script>
 </head>
 
 <body class="bg-dark-950 text-white overflow-x-hidden">
