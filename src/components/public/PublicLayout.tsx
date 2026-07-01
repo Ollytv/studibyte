@@ -11,9 +11,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, ChevronDown, Menu, X } from 'lucide-react';
 
 // ── SEO meta injection ────────────────────────────────────────────────────────
+const CANONICAL_ORIGIN = 'https://studibyte.space';
+
 export function SEOMeta({ title, description }: { title: string; description: string }) {
+  const location = useLocation();
+
   useEffect(() => {
     document.title = title;
+
     const desc = document.querySelector('meta[name="description"]');
     if (desc) {
       desc.setAttribute('content', description);
@@ -23,7 +28,31 @@ export function SEOMeta({ title, description }: { title: string; description: st
       m.content = description;
       document.head.appendChild(m);
     }
-  }, [title, description]);
+
+    // Self-referencing canonical for the current route (strip query/hash)
+    const canonicalUrl = `${CANONICAL_ORIGIN}${location.pathname === '/' ? '/' : location.pathname.replace(/\/+$/, '')}`;
+
+    let canonical = document.querySelector('link[rel="canonical"]');
+    if (canonical) {
+      canonical.setAttribute('href', canonicalUrl);
+    } else {
+      canonical = document.createElement('link');
+      canonical.setAttribute('rel', 'canonical');
+      canonical.setAttribute('href', canonicalUrl);
+      document.head.appendChild(canonical);
+    }
+
+    const ogUrl = document.querySelector('meta[property="og:url"]');
+    if (ogUrl) {
+      ogUrl.setAttribute('content', canonicalUrl);
+    } else {
+      const m = document.createElement('meta');
+      m.setAttribute('property', 'og:url');
+      m.setAttribute('content', canonicalUrl);
+      document.head.appendChild(m);
+    }
+  }, [title, description, location.pathname]);
+
   return null;
 }
 

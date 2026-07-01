@@ -14,6 +14,7 @@ import More from './pages/More';
 import Onboarding from './pages/Onboarding';
 import AuthScreen from './pages/AuthScreen';
 import SplashScreen from './pages/SplashScreen';
+import Import from './pages/Import';
 import Landing from './pages/Landing';
 import Materials from './pages/Materials';
 import Assignments from './pages/Assignments';
@@ -123,6 +124,7 @@ function MainApp() {
         {activeTab === 'attendance'  && <Attendance />}
         {activeTab === 'settings'    && <Settings />}
         {activeTab === 'more'        && <More />}
+        {activeTab === 'import'        && <Import />}
         {activeTab === 'gpa'         && <GPA />}
         {activeTab === 'timer'       && <Timer />}
         {activeTab === 'assignments' && <Assignments />}
