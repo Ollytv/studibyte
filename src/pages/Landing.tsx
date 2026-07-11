@@ -188,8 +188,15 @@ export default function Landing({ onGetStarted }: { onGetStarted: () => void }) 
     <div className="min-h-screen bg-dark-950 overflow-x-hidden">
 
       {/* ── NAV ─────────────────────────────────────────────────────────── */}
-      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-5 py-3"
-        style={{ background: 'rgba(5,8,10,0.88)', backdropFilter: 'blur(16px)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-5 pb-3"
+        style={{
+          background: 'rgba(5,8,10,0.88)',
+          backdropFilter: 'blur(16px)',
+          borderBottom: '1px solid rgba(255,255,255,0.05)',
+          // Keeps a normal 12px top gap in-browser, but grows to clear the
+          // device notch/status bar when installed as a standalone PWA.
+          paddingTop: 'max(0.75rem, env(safe-area-inset-top))',
+        }}>
         <Link to="/" className="flex items-center gap-2 touch-manipulation flex-shrink-0">
           <div className="w-7 h-7 rounded-lg bg-green-500 flex items-center justify-center">
             <Sparkles size={13} className="text-dark-950" />
@@ -220,7 +227,8 @@ export default function Landing({ onGetStarted }: { onGetStarted: () => void }) 
       </nav>
 
       {/* ── HERO ────────────────────────────────────────────────────────── */}
-      <section className="relative min-h-screen flex flex-col justify-center px-5 pt-24 pb-16 max-w-2xl mx-auto overflow-hidden">
+      <section className="relative min-h-screen flex flex-col justify-center px-5 pb-16 max-w-2xl mx-auto overflow-hidden"
+        style={{ paddingTop: 'calc(6rem + env(safe-area-inset-top))' }}>
         {/* Background glow */}
         <div className="absolute -top-20 -right-20 w-72 h-72 rounded-full opacity-10 pointer-events-none"
           style={{ background: 'radial-gradient(circle, #22c55e, transparent 70%)' }} />
@@ -793,8 +801,9 @@ export default function Landing({ onGetStarted }: { onGetStarted: () => void }) 
       </section>
 
       {/* ── FOOTER ───────────────────────────────────────────────────────── */}
-      <footer className="px-5 pt-8 pb-10 max-w-2xl mx-auto border-t border-white/5">
-        <div className="flex items-start justify-between gap-4 mb-4">
+      <footer className="px-5 pt-8 max-w-2xl mx-auto border-t border-white/5"
+        style={{ paddingBottom: 'max(2.5rem, env(safe-area-inset-bottom))' }}>
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-5 sm:gap-4 mb-4">
           <div className="min-w-0">
             <div className="flex items-center gap-2 mb-2">
               <div className="w-6 h-6 rounded-lg bg-green-500 flex items-center justify-center flex-shrink-0">
@@ -806,8 +815,8 @@ export default function Landing({ onGetStarted }: { onGetStarted: () => void }) 
               AI-powered academic platform for university and college students.
             </p>
           </div>
-          {/* Footer links — two columns on wider screens, wrapping on mobile */}
-          <div className="flex flex-wrap gap-x-5 gap-y-1 justify-end flex-shrink-0">
+          {/* Footer links — right-aligned columns on wider screens, left-aligned wrap on mobile */}
+          <div className="flex flex-wrap gap-x-5 gap-y-2 justify-start sm:justify-end flex-shrink-0">
             {[
               { label: 'Features', to: '/features' },
               { label: 'Guides',   to: '/guides'   },
@@ -835,11 +844,12 @@ export default function Landing({ onGetStarted }: { onGetStarted: () => void }) 
         {showScrollBtn && (
           <motion.button
             onClick={scrollToBottom}
-            className="fixed bottom-6 right-5 z-50 w-10 h-10 rounded-full flex items-center justify-center shadow-lg"
+            className="fixed right-5 z-50 w-10 h-10 rounded-full flex items-center justify-center shadow-lg"
             style={{
               background: 'rgba(17,24,28,0.88)',
               backdropFilter: 'blur(14px)',
               border: '1px solid rgba(34,197,94,0.3)',
+              bottom: 'max(1.5rem, calc(env(safe-area-inset-bottom) + 0.75rem))',
             }}
             initial={{ opacity: 0, scale: 0.75, y: 8 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
